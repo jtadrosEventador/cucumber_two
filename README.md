@@ -1,2 +1,2 @@
-# EmptyBase
-Empty base repo for Eventador Projects
+# FlinkReadKafka
+Java example to read from Kafka using Flink 1.7
