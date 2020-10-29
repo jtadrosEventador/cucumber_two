@@ -1,5 +1,6 @@
 package io.eventador;
 
+import org.apache.flink.api.common.eventtime.*;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -8,23 +9,16 @@ import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.AssignerWithPeriodicWatermarks;
 import org.apache.flink.streaming.api.functions.windowing.ProcessAllWindowFunction;
-import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
-import org.apache.flink.streaming.connectors.kafka.internal.FlinkKafkaProducer;
-import org.apache.flink.table.sources.wmstrategies.WatermarkStrategy;
 import org.apache.flink.util.Collector;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Map;
-import java.util.Properties;
 import java.util.UUID;
 
 
@@ -65,7 +59,7 @@ public class FlinkReadKafka {
 
 
         FlinkKafkaConsumer010<String> consumer = new FlinkKafkaConsumer010<>(sourceTopic, schema, params.getProperties());
-        consumer.assignTimestampsAndWatermarks(new KafkaTimestampExtractor());
+        consumer.assignTimestampsAndWatermarks(new CucumberWatermarkStrategy());
         DataStream<String> messageStream = env.addSource(consumer);
 
 
@@ -103,18 +97,46 @@ public class FlinkReadKafka {
         env.execute("FlinkReadWriteWindowKafka");
     }
 
-    private static class KafkaTimestampExtractor implements AssignerWithPeriodicWatermarks<String> {
 
+
+
+    public static class CucumberWatermarkStrategy implements WatermarkStrategy{
+
+        @Override
+        public WatermarkGenerator createWatermarkGenerator(WatermarkGeneratorSupplier.Context context) {
+            return new FlinkReadKafka.BoundedOutOfOrdernessGenerator<>();
+        }
+
+        @Override
+        public TimestampAssigner createTimestampAssigner(TimestampAssignerSupplier.Context context) {
+            return new FlinkReadKafka.KafkaTimestampAssigner();
+        }
+    }
+
+
+    public static class KafkaTimestampAssigner implements TimestampAssigner<String> {
         @Override
         public long extractTimestamp(String event, long previousElementTimestamp) {
             return previousElementTimestamp;
         }
+    }
 
-        @Nullable
+    public static class BoundedOutOfOrdernessGenerator<Event> implements WatermarkGenerator<Event> {
+
+        private final long maxOutOfOrderness = 3500; // 3.5 seconds
+        private long currentMaxTimestamp;
+
+
         @Override
-        public Watermark getCurrentWatermark() {
-            return new Watermark(System.currentTimeMillis());
+        public void onEvent(Event event, long eventTimestamp, WatermarkOutput watermarkOutput) {
+            currentMaxTimestamp = Math.max(currentMaxTimestamp, eventTimestamp);
         }
+
+        @Override
+        public void onPeriodicEmit(WatermarkOutput output) {
+            output.emitWatermark(new Watermark(currentMaxTimestamp - maxOutOfOrderness - 1));
+        }
+
     }
 }
 

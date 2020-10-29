@@ -30,7 +30,8 @@ under the License.
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<flink.version>1.7-SNAPSHOT</flink.version>
+		<flink.version>1.11.2</flink.version>
+		<flink.scala.version>2.12</flink.scala.version>
 	</properties>
 
 	<repositories>
@@ -60,28 +61,35 @@ under the License.
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-table_2.11</artifactId>
+			<artifactId>flink-table-planner_${flink.scala.version}</artifactId>
+			<version>${flink.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-table-planner-blink_${flink.scala.version}</artifactId>
+			<version>${flink.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-streaming-java_${flink.scala.version}</artifactId>
 			<version>${flink.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-streaming-java_2.11</artifactId>
+			<artifactId>flink-streaming-scala_${flink.scala.version}</artifactId>
 			<version>${flink.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-streaming-scala_2.11</artifactId>
-			<version>${flink.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-clients_2.11</artifactId>
+			<artifactId>flink-clients_${flink.scala.version}</artifactId>
 			<version>${flink.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-connector-kafka-0.11_2.11</artifactId>
+			<artifactId>flink-connector-kafka-0.11_${flink.scala.version}</artifactId>
 			<version>${flink.version}</version>
 		</dependency>
 	</dependencies>
@@ -102,23 +110,29 @@ under the License.
 				</dependency>
 				<dependency>
 					<groupId>org.apache.flink</groupId>
-					<artifactId>flink-table_2.10</artifactId>
-					<version>${flink.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.flink</groupId>
-					<artifactId>flink-streaming-java_2.10</artifactId>
+					<artifactId>flink-table-planner_${flink.scala.version}</artifactId>
 					<version>${flink.version}</version>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.flink</groupId>
-					<artifactId>flink-streaming-scala_2.10</artifactId>
+					<artifactId>flink-table-planner-blink_${flink.scala.version}</artifactId>
+					<version>${flink.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.flink</groupId>
+					<artifactId>flink-streaming-java_${flink.scala.version}</artifactId>
 					<version>${flink.version}</version>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.flink</groupId>
-					<artifactId>flink-clients_2.10</artifactId>
+					<artifactId>flink-streaming-scala_${flink.scala.version}</artifactId>
+					<version>${flink.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.flink</groupId>
+					<artifactId>flink-clients_${flink.scala.version}</artifactId>
 					<version>${flink.version}</version>
 					<scope>provided</scope>
 				</dependency>
